@@ -18,6 +18,11 @@
   align-items: center;
 }
 
+.kategori {
+  text-align: center;
+  font-weight: bold;
+}
+
 .marker {
   font-size: 10px;
   color: white;

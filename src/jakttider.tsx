@@ -34,7 +34,7 @@ const getBodies = (hovedkategori: Hovedkategori) => {
     const rows = vilter.map(getRow);
 
     return <tbody key={key}>
-      <tr><td colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>{key}</td></tr>
+      <tr><td colSpan={2} className='kategori'>{key}</td></tr>
       {rows}
     </tbody>
   })
