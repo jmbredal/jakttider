@@ -33,7 +33,7 @@ const getBodies = (hovedkategori: Hovedkategori) => {
   return Object.entries(groups).map(([key, vilter]) => {
     const rows = vilter.map(getRow);
 
-    return <tbody>
+    return <tbody key={key}>
       <tr><td colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>{key}</td></tr>
       {rows}
     </tbody>
@@ -44,7 +44,7 @@ const getTitle = (vilt: Vilt) => {
   const dateFormat = 'do LLL';
   const from = format(vilt.start, dateFormat);
   const to = format(vilt.end, dateFormat);
-  
+
   return `${from} - ${to}`;
 }
 
@@ -65,7 +65,7 @@ const getIntervals = (vilt: Vilt) => {
 const getRow = (vilt: Vilt) => {
   const intervalElements = getIntervals(vilt).map(getIntervalElement);
 
-  return <tr>
+  return <tr key={vilt.name}>
     <td style={{ whiteSpace: 'nowrap' }}>{vilt.name}</td>
     <td style={{ width: '100%' }}>
       <div className='year' title={getTitle(vilt)}>
@@ -85,8 +85,12 @@ const getIntervalElement = (tid: JaktIntervall) => {
   const left = getPercentageThisYear(startDayOfYear - 1) + '%';
   const width = getPercentageThisYear(endDayOfYear - startDayOfYear + 1) + '%';
 
-  return <div className='interval'
-    style={{ width, left }}>
+  const startDate = format(tid.start, 'dd.MM');
+  const endDate = format(tid.end, 'dd.MM');
+
+  return <div key={tid.start.getTime()} className='interval' style={{ width, left }}>
+    <span className='marker start-marker'>{startDate}</span>
+    <span className='marker end-marker'>{endDate}</span>
   </div>
 }
 

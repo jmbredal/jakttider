@@ -1,6 +1,7 @@
 
 .container {
   padding: 0 1rem;
+  margin-bottom: 3rem;
 }
 
 .year {
@@ -13,4 +14,20 @@
   background-color: steelblue;
   height: 100%;
   position: absolute;
+  display: flex;
+  align-items: center;
+}
+
+.marker {
+  font-size: 10px;
+  color: white;
+  position: absolute;
+}
+
+.start-marker {
+  left: 3px;
+}
+
+.end-marker {
+  right: 3px
 }
