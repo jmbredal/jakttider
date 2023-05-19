@@ -1,0 +1,16 @@
+
+.container {
+  padding: 0 1rem;
+}
+
+.year {
+  background-color: lightsteelblue;
+  height: 20px;
+  position: relative;
+}
+
+.interval {
+  background-color: steelblue;
+  height: 100%;
+  position: absolute;
+}
