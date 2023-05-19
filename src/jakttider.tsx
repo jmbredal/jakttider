@@ -24,6 +24,57 @@ const getPercentage = (day: number, daysInYear: number) => {
   return day * 100 / daysInYear;
 }
 
+const getBodies = (hovedkategori: Hovedkategori) => {
+  const vilt = jakttider
+    .filter(tid => hovedkategori === "storvilt" ? tid.storvilt : !tid.storvilt)
+
+  const groups = groupBy(vilt, 'kategori');
+
+  return Object.entries(groups).map(([key, vilter]) => {
+    const rows = vilter.map(getRow);
+
+    return <tbody>
+      <tr><td colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>{key}</td></tr>
+      {rows}
+    </tbody>
+  })
+}
+
+const getTitle = (vilt: Vilt) => {
+  const dateFormat = 'do LLL';
+  const from = format(vilt.start, dateFormat);
+  const to = format(vilt.end, dateFormat);
+  
+  return `${from} - ${to}`;
+}
+
+const getIntervals = (vilt: Vilt) => {
+  const year = new Date().getFullYear();
+
+  const intervals: JaktIntervall[] = [];
+  if (vilt.start.getTime() > vilt.end.getTime()) {
+    intervals.push({ start: vilt.start, end: new Date(`${year}-12-23`) });
+    intervals.push({ start: new Date(`${year + 1}-01-01`), end: vilt.end });
+  } else {
+    intervals.push({ start: vilt.start, end: vilt.end });
+  }
+
+  return intervals;
+}
+
+const getRow = (vilt: Vilt) => {
+  const intervalElements = getIntervals(vilt).map(getIntervalElement);
+
+  return <tr>
+    <td style={{ whiteSpace: 'nowrap' }}>{vilt.name}</td>
+    <td style={{ width: '100%' }}>
+      <div className='year' title={getTitle(vilt)}>
+        {intervalElements}
+      </div>
+    </td>
+  </tr>
+}
+
 const getIntervalElement = (tid: JaktIntervall) => {
   const thisYearsDays = getDaysInYear(new Date());
   const getPercentageThisYear = (days: number) => getPercentage(days, thisYearsDays);
@@ -37,55 +88,6 @@ const getIntervalElement = (tid: JaktIntervall) => {
   return <div className='interval'
     style={{ width, left }}>
   </div>
-}
-
-const getBodies = (hovedkategori: Hovedkategori) => {
-  const vilt = jakttider
-    .filter(tid => hovedkategori === "storvilt" ? tid.storvilt : !tid.storvilt)
-
-  const groups = groupBy(vilt, 'kategori');
-
-  return Object.keys(groups).map(key => {
-    const tider = groups[key];
-
-    const rows = getRows(tider);
-    return <tbody>
-      <tr><td colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>{key}</td></tr>
-      {rows}
-    </tbody>
-  })
-}
-
-const getRows = (vilter: Vilt[]) => {
-  const year = new Date().getFullYear();
-
-  return vilter.map(vilt => {
-    const tider: JaktIntervall[] = [];
-    if (vilt.start.getTime() > vilt.end.getTime()) {
-      tider.push({ start: vilt.start, end: new Date(`${year}-12-23`) });
-      tider.push({ start: new Date(`${year + 1}-01-01`), end: vilt.end });
-    } else {
-      tider.push({ start: vilt.start, end: vilt.end });
-    }
-
-    const intervals = tider.map((tid) => {
-      return getIntervalElement(tid);
-    });
-
-    const dateFormat = 'do LLL';
-    const from = format(vilt.start, dateFormat);
-    const to = format(vilt.end, dateFormat);
-    const title = `${from} - ${to}`;
-
-    return <tr>
-      <td style={{ whiteSpace: 'nowrap' }}>{vilt.name}</td>
-      <td style={{ width: '100%' }}>
-        <div className='year' title={title}>
-          {intervals}
-        </div>
-      </td>
-    </tr>
-  });
 }
 
 export function JaktTider() {
@@ -107,7 +109,7 @@ export function JaktTider() {
       </table>
 
       <table style={{ width: '100%' }}>
-      <thead>
+        <thead>
           <tr>
             <td colSpan={2} style={{ textAlign: 'center' }}>
               <h1>Småvilt</h1>
