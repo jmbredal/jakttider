@@ -172,6 +172,12 @@ export const jakttider = [
   },
   {
     kategori: 'Hønsefugler',
+    name: 'Fasan',
+    start: new Date('2022-10-01'),
+    end: new Date('2022-12-23'),
+  },
+  {
+    kategori: 'Hønsefugler',
     name: 'Lirype',
     start: new Date('2022-09-10'),
     end: new Date('2022-02-28'),
