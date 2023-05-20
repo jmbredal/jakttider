@@ -1,17 +1,20 @@
 import { format, getDayOfYear, getDaysInYear, setDefaultOptions } from "date-fns";
 import { nb } from 'date-fns/locale';
-import { groupBy } from 'lodash';
+import { filter, flow, groupBy, map, toPairs } from 'lodash';
 import './jakttider.css';
 import { jakttider } from './vilt';
 
 type Hovedkategori = 'storvilt' | 'småvilt'
 
 interface Vilt {
-  kategori?: string;
+  storvilt?: boolean;
+  kategori: string;
   name: string;
   start: Date;
   end: Date;
 }
+
+type ViltGruppe = [string, Vilt[]];
 
 interface JaktIntervall {
   start: Date;
@@ -22,22 +25,6 @@ setDefaultOptions({ locale: nb })
 
 const getPercentage = (day: number, daysInYear: number) => {
   return day * 100 / daysInYear;
-}
-
-const getBodies = (hovedkategori: Hovedkategori) => {
-  const vilt = jakttider
-    .filter(tid => hovedkategori === "storvilt" ? tid.storvilt : !tid.storvilt)
-
-  const groups = groupBy(vilt, 'kategori');
-
-  return Object.entries(groups).map(([key, vilter]) => {
-    const rows = vilter.map(getRow);
-
-    return <tbody key={key}>
-      <tr><td colSpan={2} className='kategori'>{key}</td></tr>
-      {rows}
-    </tbody>
-  })
 }
 
 const getTitle = (vilt: Vilt) => {
@@ -62,19 +49,6 @@ const getIntervals = (vilt: Vilt) => {
   return intervals;
 }
 
-const getRow = (vilt: Vilt) => {
-  const intervalElements = getIntervals(vilt).map(getIntervalElement);
-
-  return <tr key={vilt.name}>
-    <td style={{ whiteSpace: 'nowrap' }}>{vilt.name}</td>
-    <td style={{ width: '100%' }}>
-      <div className='year' title={getTitle(vilt)}>
-        {intervalElements}
-      </div>
-    </td>
-  </tr>
-}
-
 const getIntervalElement = (tid: JaktIntervall) => {
   const thisYearsDays = getDaysInYear(new Date());
   const getPercentageThisYear = (days: number) => getPercentage(days, thisYearsDays);
@@ -92,6 +66,37 @@ const getIntervalElement = (tid: JaktIntervall) => {
     <span className='marker start-marker'>{startDate}</span>
     <span className='marker end-marker'>{endDate}</span>
   </div>
+}
+
+const getRow = (vilt: Vilt) => {
+  const intervalElements = getIntervals(vilt).map(getIntervalElement);
+
+  return <tr key={vilt.name}>
+    <td style={{ whiteSpace: 'nowrap' }}>{vilt.name}</td>
+    <td style={{ width: '100%' }}>
+      <div className='year' title={getTitle(vilt)}>
+        {intervalElements}
+      </div>
+    </td>
+  </tr>
+}
+
+const getBodies = (hovedkategori: Hovedkategori) => {
+  const hovedKategoriFilter = (_vilt: Vilt) => hovedkategori === "storvilt" ? _vilt.storvilt : !_vilt.storvilt;
+  const filterOnHovedKategori = (_vilter: Vilt[]) => filter(_vilter, hovedKategoriFilter);
+  const groupByKategori = (_vilter: Vilt[]) => groupBy(_vilter, 'kategori');
+  const createBody = ([_key, _vilter]: ViltGruppe) =>
+    <tbody key={_key}>
+      <tr><td colSpan={2} className='kategori'>{_key}</td></tr>
+      {map(_vilter, getRow)}
+    </tbody>;
+
+  return flow([
+    filterOnHovedKategori,
+    groupByKategori,
+    toPairs,
+    (pairs) => map(pairs, createBody)
+  ])(jakttider);
 }
 
 export function JaktTider() {
