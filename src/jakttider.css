@@ -18,6 +18,10 @@
   align-items: center;
 }
 
+.forbidden {
+  background-color: red;
+}
+
 .kategori {
   text-align: center;
   font-weight: bold;
