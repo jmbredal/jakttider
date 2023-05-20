@@ -25,7 +25,7 @@ setDefaultOptions({ locale: nb });
 
 const year = new Date().getFullYear();
 
-function getEaster(year: number) {
+const getEaster = (year: number) => {
   var f = Math.floor,
     // Golden Number - 1
     G = year % 19,
@@ -56,32 +56,29 @@ const getTitle = (vilt: Vilt) => {
   return `${from} - ${to}`;
 }
 
-const getIntervals = (vilt: Vilt) => {
-  const intervals: JaktIntervall[] = [];
-  if (vilt.start.getTime() > vilt.end.getTime()) {
-    intervals.push({ start: vilt.start, end: new Date(`${year}-12-23`) });
-    intervals.push({ start: new Date(`${year + 1}-01-01`), end: vilt.end });
-  } else {
-    intervals.push({ start: vilt.start, end: vilt.end });
-  }
+const getIntervals = (vilt: Vilt): JaktIntervall[] => {
+  const { start, end } = vilt;
+  const huntingTimeWrapsYear = start.getTime() > end.getTime();
 
-  return intervals;
+  return huntingTimeWrapsYear
+    ? [{ start, end: new Date(`${year}-12-23`) }, { start: new Date(`${year + 1}-01-01`), end }]
+    : [{ start, end }];
 }
 
-const getIntervalElement = (tid: JaktIntervall) => {
+const getIntervalElement = (intervall: JaktIntervall) => {
   const thisYearsDays = getDaysInYear(new Date(year, 0, 1));
   const getPercentageThisYear = (days: number) => getPercentage(days, thisYearsDays);
 
-  const startDayOfYear = getDayOfYear(tid.start);
-  const endDayOfYear = getDayOfYear(tid.end);
+  const startDayOfYear = getDayOfYear(intervall.start);
+  const endDayOfYear = getDayOfYear(intervall.end);
 
   const left = getPercentageThisYear(startDayOfYear - 1) + '%';
   const width = getPercentageThisYear(endDayOfYear - startDayOfYear + 1) + '%';
 
-  const startDate = format(tid.start, 'dd.MM');
-  const endDate = format(tid.end, 'dd.MM');
+  const startDate = format(intervall.start, 'dd.MM');
+  const endDate = format(intervall.end, 'dd.MM');
 
-  return <div key={tid.start.getTime()} className='interval' style={{ width, left }}>
+  return <div key={intervall.start.getTime()} className='interval' style={{ width, left }}>
     <span className='marker start-marker'>{startDate}</span>
     <span className='marker end-marker'>{endDate}</span>
   </div>
@@ -99,11 +96,9 @@ const getForbiddenElement = (date: Date, interval: number) => {
   return <div key={date.getTime()} className='interval forbidden' style={{ width, left }}></div>
 }
 
-const getEasterIntervalElement = () => {
-  const [_month, _date] = getEaster(year);
-  const month = _month - 1;
-  const day = _date - 1;
-  const date = new Date(year, month, day);
+const getEasterElement = () => {
+  const [month, day] = getEaster(year);
+  const date = new Date(year, month - 1, day - 1);
 
   return getForbiddenElement(date, 3)
 }
@@ -114,7 +109,7 @@ const getRomJulElement = () => {
 
 const getRow = (vilt: Vilt) => {
   const intervalElements = [
-    getEasterIntervalElement(),
+    getEasterElement(),
     getRomJulElement(),
     getIntervals(vilt).map(getIntervalElement)
   ];
@@ -153,15 +148,6 @@ export function JaktTider() {
 
   return (
     <div className="container">
-      <div>
-        <p>Ikke lov å jakte</p>
-
-        <ul>
-          <li>Langfredag, påskeaften, 1. påskedag</li>
-          <li>24.12 til og med 31.12</li>
-        </ul>
-      </div>
-
       <table style={{ width: '100%' }}>
         <thead>
           <tr>
@@ -185,6 +171,16 @@ export function JaktTider() {
 
         {småVilt}
       </table>
+
+      <div>
+        <p>Ikke lov å jakte:</p>
+
+        <ul>
+          <li>Langfredag, påskeaften, 1. påskedag</li>
+          <li>24.12 til og med 31.12</li>
+        </ul>
+      </div>
+
     </div >
   )
 }
